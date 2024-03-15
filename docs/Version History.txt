@@ -1,0 +1,9 @@
+Date: 240310 v0.2.1
+Alpha version completed with support for libraries with 1-3 building blocks.
+Currently supported data input is a fastq file.
+Fasta file support may be added at a later date.
+
+Future features to include: 
+Multi-fastq file processing.
+Support for libraries larger than 3 building blocks.
+
