@@ -148,7 +148,6 @@ def update_code_df(code_df:pd.DataFrame, code_name:str, code_list:list):
 	return(code_df)
 
 
-
 def filter_code_df(code_df:pd.DataFrame, corrected_df:pd.DataFrame ,code_name:str, correction_dict:dict):
 	corrected_df_before_rows=corrected_df.shape[0] #rows before starting current round of filtering 
 	corrected_df_initial_rows=code_df.shape[0] #rows before starting any filtering 
@@ -163,53 +162,8 @@ def filter_code_df(code_df:pd.DataFrame, corrected_df:pd.DataFrame ,code_name:st
 	
 	corrected_df_remaining_rows=corrected_df.shape[0]
 
-	#attrition=round(corrected_df_remaining_rows/corrected_df_initial_rows, ndigits=2)
+	
 	attrition=round(((corrected_df_initial_rows-((corrected_df_initial_rows-corrected_df_before_rows)+current_rejected))/corrected_df_initial_rows), ndigits=2)
 	correction_dict[code_name]=(corrected, rejected, attrition)
 	return((corrected_df, correction_dict))
 	
-
-class Logging:
-	def __init__(self):
-		#self.output_path=output_path
-		self.init_time=datetime.datetime.now()
-		self.user_inputs={}
-		
-	def store_preprocessing_records(self, n_before:int, n_after:int, time:float):
-			self.n_reads_before=n_before
-			self.n_reads_after=n_after
-			self.n_reads_removed=n_before-n_after
-			self.preprocessing_dict={'Total reads': n_before, 
-									 'Extracted reads':f'{n_after} ({round((n_after/n_before)*100, ndigits=1)}%)',
-									 'Removed reads' : f'{self.n_reads_removed} ({round((self.n_reads_removed/n_before)*100, ndigits=1)}%)',
-									 'Preproc time' : f'{time} sec'
-									 }
-		
-	def store_extraction_records(self, start_time:float, end_time:float):
-			
-			self.extraction_duration=round(start_time-end_time, ndigits=4)
-		
-	def store_correction_records(self, n_before:int, n_after:int, info_dict:dict, time_dict:dict):
-			self.rows_before=n_before
-			self.rows_after=n_after
-			self.correction_info=info_dict
-			self.correction_times=time_dict
-
-			print(f'Rows before correction: ', n_before)
-			for code, info in info_dict.items():
-				print(f'{code}| Corrected: {info[0]}, Rejected: {info[1]}, Attrition Rate: {info[2]}')
-			print(f'Rows after correction: ', n_after)
-
-
-
-class Codes:
-	def __init__(self, bb_codes:dict, pcr_codes:dict):
-		self.bb_codes = bb_codes
-		self.pcr_codes = pcr_codes
-
-		#Create lists of the correct encoding sequences used for error checking
-		#These are defined with the keys from dicts found in the nadel_fragments.py file and the primers.py file
-		code_sequences_bb1=list(fragment_set_1.keys())
-		code_sequences_bb2=list(fragment_set_2.keys())
-		code_sequences_pcr1=list(pcr_primer_1.keys())
-		code_sequences_pcr2=list(pcr_primer_2.keys())
