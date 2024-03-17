@@ -133,13 +133,14 @@ def calc_variance(df):
 		
 	"""
 	variance_scores=[]
-	for i in range(len(df.columns)):
+	# Each  df column header is the numerical index for an array of integers
+	# In this case, the integers have been mapped from A, C, G, or T characters 
+	for i in range(len(df.columns)): 
 		variance=1
-		value_counts = df[i+1].value_counts()
+		value_counts = df[i+1].value_counts() #Get the counts for each base's integer in the current index (col)
 		for val in value_counts:
-			variance=variance*val
+			variance=variance*val #multiplicative magnification of the value counts
 		variance_scores.append(variance)
-
 	return(variance_scores)
 
 
@@ -159,10 +160,7 @@ def filter_code_df(code_df:pd.DataFrame, corrected_df:pd.DataFrame ,code_name:st
 	current_rejected=np.count_nonzero(corrected_df[f'{code_name}_errors']>1) #count the rows that currently rejected
 
 	corrected_df=corrected_df[corrected_df[f'{code_name}_errors'] <=1] #filter out any rows with too many errors
-	
-	corrected_df_remaining_rows=corrected_df.shape[0]
 
-	
 	attrition=round(((corrected_df_initial_rows-((corrected_df_initial_rows-corrected_df_before_rows)+current_rejected))/corrected_df_initial_rows), ndigits=2)
 	correction_dict[code_name]=(corrected, rejected, attrition)
 	return((corrected_df, correction_dict))
