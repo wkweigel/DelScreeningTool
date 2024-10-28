@@ -91,12 +91,12 @@ def count_matching_characters(str1, str2):
 	return count
 
 
-def get_closest_match(incorrect_sequence, correct_sequence_list):
-	"""For an incorrect sequence, find the closest matching sequence from a list of correct sequences.
+def get_closest_match(query_sequence, correct_sequence_list):
+	"""For an query sequence, find the closest matching sequence from a list of correct sequences.
 	
 	Arguments
 	==========
-	incorrect_sequence: An encoding sequence with at least one error
+	query_sequence: An encoding sequence with at least one error
 	correct_sequence_list: A list of the possible correct encoding sequences
 	
 	Returns
@@ -105,17 +105,41 @@ def get_closest_match(incorrect_sequence, correct_sequence_list):
 	best_match: A string corresponding to the closest matching correct sequence.
 	"""
 	score_dict={}
-	if incorrect_sequence in correct_sequence_list: #If the sequence is correct
-		num_matches=len(incorrect_sequence)
-		best_match=incorrect_sequence
+	if query_sequence in correct_sequence_list: #If the sequence is correct
+		num_matches=len(query_sequence)
+		best_match=query_sequence
 	else:
 		for correct_sequence in correct_sequence_list:
-			score=count_matching_characters(correct_sequence, incorrect_sequence)
+			score=count_matching_characters(correct_sequence, query_sequence)
 			score_dict[correct_sequence]=score
 		best_score=max(score_dict.values())
 		best_match=max(score_dict, key=lambda k: score_dict.get(k))
 		num_matches=best_score
-	num_errors=len(incorrect_sequence)-num_matches
+	num_errors=len(query_sequence)-num_matches
+	
+	return(num_errors, best_match)
+
+def get_match(query_sequence, correct_sequence_list):
+	"""For an query sequence, determine if matches a sequence from a list of correct sequences.
+	
+	Arguments
+	==========
+	query_sequence: An encoding sequence with at least one error
+	correct_sequence_list: A list of the possible correct encoding sequences
+	
+	Returns
+	=======
+	num_errors: An int value representing the total number of errors in the sequence.
+	best_match: A string corresponding to the closest matching correct sequence.
+	"""
+	score_dict={}
+	if query_sequence in correct_sequence_list: #If the sequence is correct
+		num_matches=len(query_sequence)
+		best_match=query_sequence
+	else:
+		best_match='X'*len(query_sequence)
+		num_matches=0
+	num_errors=len(query_sequence)-num_matches
 	
 	return(num_errors, best_match)
 
@@ -144,8 +168,32 @@ def calc_variance(df):
 	return(variance_scores)
 
 
-def update_code_df(code_df:pd.DataFrame, code_name:str, code_list:list):
-	code_df[[f'{code_name}_errors', f'corrected_{code_name}']] = code_df[f'{code_name}'].progress_apply(lambda code: pd.Series(get_closest_match(code, code_list)))
+def update_code_df(code_df:pd.DataFrame, code_name:str, code_list:list, correction_mode='strict'):
+	'''
+	Update a code column in the code_df according to the specified correction mode:
+
+	Arguments
+	==========
+	code_df: The dataframe containing the raw encoding sequences.
+
+	code_name: The column name to perform the correction on.
+
+	code_list: A list of the possible correct sequence options.
+
+	correction_mode: The type of correction to apply ('flexible' or 'strict').
+	
+	flexible = The correction algorithm will attempt to unambiguously correct codes with only an single error.<br>
+	strict = The correction algorithm will only search for matches with no errors.
+
+	Returns
+	=======
+	code_df: An updated code_df containing corrected columns.
+	'''
+	if correction_mode == 'flexible':
+		code_df[[f'{code_name}_errors', f'corrected_{code_name}']] = code_df[f'{code_name}'].progress_apply(lambda code: pd.Series(get_closest_match(code, code_list)))
+	if correction_mode == 'strict':
+		code_df[[f'{code_name}_errors', f'corrected_{code_name}']] = code_df[f'{code_name}'].progress_apply(lambda code: pd.Series(get_match(code, code_list)))
+
 	return(code_df)
 
 
